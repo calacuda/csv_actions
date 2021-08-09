@@ -1,0 +1,106 @@
+#!/usr/bin/python
+"""
+csv search.py
+
+will search through a csv for a match to a given string
+
+By: Eoghan West | MIT Licence | Epoch 5/27/2020
+"""
+
+
+from csv_actions.csvprint import *
+# import csv_actions
+import os
+from argparse import ArgumentParser
+from typing import Dict, List
+
+curent_dir = os.getcwd()
+
+parser = ArgumentParser(description="Searches through a csv file then prints out the matching lines in an eazy to read way.")
+parser.add_argument("--columns", "-c", type=str, dest="columns", default="", help="the column to search through. if none is specified then the program will search trough all columns." )
+parser.add_argument("csv", metavar="CSV",  type=str, nargs=1, help="the csv file to be searched through.")
+parser.add_argument("query", metavar="Query", type=str, nargs=1, help="the search query.")
+
+
+args = parser.parse_args()
+# print(args)
+FILE_NAME = curent_dir + f"/{args.csv[0]}"
+QUERY = args.query[0]
+COLUMNS = args.columns.split(",")
+# print("COLUMNS : ", COLUMNS)
+# print("query : ", QUERY)
+
+
+def search_column(data: List[str], query):
+    """
+    returns the index value of all lines that match query.
+    """
+    indexes = set(())
+    for i in range(len(data)):
+        # print("elm : ", data[i], data[i] == query)
+        if query.lower() in data[i].lower():
+            indexes.add(i)
+    # print("exiting column_search", len(indexes))
+    return indexes
+
+
+def search_all(data, names, query):
+    """
+    searches through all the columns in data to see if querys in present.
+    """
+    indexes = set(())
+    for name in names:
+        # print("name : ", name)
+        column_indexes = search_column(data.get(name), query)
+        # print(f"\t{len(column_indexes)}")
+        indexes = indexes.union(column_indexes)
+    # print(len(indexes), indexes)
+    return indexes
+    
+
+def get_row(data: List, indexes):
+    """
+    retruns a list of all the elements of data at the indexex values specified in indexes
+    """
+    catch = []
+    for i in indexes:
+        catch.append(data[i])
+    return catch
+    
+
+def get_lines(data, cnames, indexes):
+    """
+    combs though data and picks out all the lines with an index value in indexes
+    """
+    # print(indexes)
+    indexes = list(indexes)
+    indexes.sort(reverse=True)
+    # print(indexes[0], indexes[-1], len(data)) 
+    lines = {}
+    for name in cnames:
+        line = get_row(data.get(name), indexes)
+        lines[name] = line
+        # print(i)
+        # lines.append(data.pop(i))
+        # break
+    return lines
+
+    
+def main(fname):
+    data, cnames = get_data(open(fname, "r"))
+    if COLUMNS[0] == "":
+        print(f"no column specified. searching all columns for, '{QUERY.upper()}'.")
+        indexes = search_all(data, cnames, QUERY)
+    elif len(COLUMNS) == 1:
+        print(f"searching column, '{COLUMNS[0].upper()}', for, '{QUERY.upper()}'.")
+        indexes = search_column(data.get(COLUMNS[0]), QUERY)
+    elif len(COLUMNS) > 1:
+        print(f"looking though '{ ', '.join(COLUMNS) }', for {QUERY.upper()}.")
+        indexes = search_all(data, COLUMNS, QUERY)
+    lines = get_lines(data, cnames, indexes)
+    out(lines, cnames)
+
+if __name__ == "__main__":
+    main(FILE_NAME)
+    # data, names = get_data(open(FILE_NAME, "r"))
+    # search_all(data, names, "fire")

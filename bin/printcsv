@@ -1,0 +1,28 @@
+#!/usr/bin/python
+"""
+csv print.py
+
+pritty prints a csv file.
+
+By: Eoghan West | MIT Licence | Epoch: 5/27/2020
+"""
+
+
+from argparse import ArgumentParser
+import os
+from csv_actions.csvprint import main
+
+
+curent_dir = os.getcwd()
+
+parser = ArgumentParser(description="Prints out csv files in a pritty eazier to read way.")
+
+parser.add_argument("CSV", metavar="C", type=str, nargs=1, help="the csv file to be printed")
+
+args = parser.parse_args()
+SEPERATOR = 2
+
+
+if __name__ == "__main__":
+    fname = curent_dir + f"/{args.CSV[0]}"
+    main(fname)
